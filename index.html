@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TimeCapsule</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f5fa;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+    }
+    form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+    input, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .capsule {
+      background: #fff;
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+    }
+    .locked {
+      background: #ffe8e8;
+      border-left: 4px solid #ff5555;
+    }
+    .unlocked {
+      background: #e8fff1;
+      border-left: 4px solid #55cc77;
+    }
+    small {
+      color: gray;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎁 TimeCapsule</h1>
+  <form id="capsuleForm">
+    <label for="message">Your Message to the Future:</label>
+    <textarea id="message" rows="5" required></textarea>
+
+    <label for="unlockDate">Unlock Date:</label>
+    <input type="date" id="unlockDate" required />
+
+    <button type="submit">Create Capsule</button>
+  </form>
+
+  <h2>Your Capsules</h2>
+  <div id="capsuleList"></div>
+
+  <script>
+    const capsuleForm = document.getElementById('capsuleForm');
+    const capsuleList = document.getElementById('capsuleList');
+
+    function loadCapsules() {
+      const capsules = JSON.parse(localStorage.getItem('capsules')) || [];
+      capsuleList.innerHTML = '';
+
+      const today = new Date().toISOString().split('T')[0];
+
+      capsules.forEach((capsule, index) => {
+        const isUnlocked = capsule.unlockDate <= today;
+
+        const capsuleDiv = document.createElement('div');
+        capsuleDiv.className = 'capsule ' + (isUnlocked ? 'unlocked' : 'locked');
+
+        capsuleDiv.innerHTML = `
+          <p><strong>Unlock Date:</strong> ${capsule.unlockDate}</p>
+          <p><strong>Status:</strong> ${isUnlocked ? '🔓 Unlocked' : '🔒 Locked'}</p>
+          <p>${isUnlocked ? capsule.message : '<em>Locked until unlock date.</em>'}</p>
+          <small>Created on: ${capsule.createdAt}</small>
+        `;
+
+        capsuleList.appendChild(capsuleDiv);
+      });
+    }
+
+    capsuleForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const message = document.getElementById('message').value.trim();
+      const unlockDate = document.getElementById('unlockDate').value;
+
+      if (!message || !unlockDate) return;
+
+      const newCapsule = {
+        message,
+        unlockDate,
+        createdAt: new Date().toLocaleDateString()
+      };
+
+      const capsules = JSON.parse(localStorage.getItem('capsules')) || [];
+      capsules.push(newCapsule);
+      localStorage.setItem('capsules', JSON.stringify(capsules));
+
+      capsuleForm.reset();
+      loadCapsules();
+    });
+
+    loadCapsules();
+  </script>
+
+</body>
+</html>
